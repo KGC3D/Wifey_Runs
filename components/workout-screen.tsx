@@ -6,6 +6,7 @@ import {
   countdownTimerA11y,
   getCountdownAriaLabel,
 } from "@/lib/workout-a11y";
+import { shouldShowRunHint } from "@/lib/workout-ui";
 
 // Mobile-first single-screen workout UI. Intentionally minimal: no settings,
 // no editing, no profile, no analytics. The interface should never grow.
@@ -35,6 +36,11 @@ export function WorkoutScreen() {
   const countdownText = formatMmSs(
     isIdle ? ctrl.totalDurationMs : isComplete ? 0 : ctrl.stepRemainingMs
   );
+
+  // Coaching hint shown only during the Run intervals. Mirrors the
+  // "running at a conversational pace" copy from the original reference.
+  // Compared by literal label since the workout step labels are stable.
+  const showRunHint = shouldShowRunHint(ctrl.status, ctrl.currentStepLabel);
 
   return (
     <main
@@ -108,6 +114,21 @@ export function WorkoutScreen() {
         >
           {isIdle ? "Ready" : ctrl.currentStepLabel}
         </div>
+
+        {showRunHint && (
+          <div
+            style={{
+              marginTop: "-0.5rem",
+              fontSize: "0.9375rem",
+              fontStyle: "italic",
+              color: "var(--muted)",
+              letterSpacing: "0.01em",
+              maxWidth: "22ch",
+            }}
+          >
+            at a conversational pace
+          </div>
+        )}
 
         <div
           role={countdownTimerA11y.role}
