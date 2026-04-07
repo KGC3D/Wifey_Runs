@@ -6,9 +6,11 @@ pocket, and listen.
 
 ## What it does
 
-Plays a fixed ~25-minute Couch-to-5K-style interval workout and speaks each
+Plays a fixed 26-minute Couch-to-5K-style interval workout and speaks each
 phase aloud through your phone or AirPods using the browser's
 [Web Speech API](https://developer.mozilla.org/docs/Web/API/SpeechSynthesis).
+During each Run interval, the screen also shows a small coaching hint:
+_at a conversational pace_.
 
 The workout:
 
@@ -34,6 +36,9 @@ npm run dev
 ```
 
 Then open http://localhost:3000 in your browser.
+
+For quick local QA, open `http://localhost:3000/?fast=60` to compress the full
+workout into about 26 seconds while preserving the same step transitions.
 
 ## Deploy
 
@@ -79,4 +84,4 @@ Once deployed, the app can be installed as a standalone home-screen web app:
 
 ## License
 
-MIT.
+MIT. See [LICENSE](LICENSE).
