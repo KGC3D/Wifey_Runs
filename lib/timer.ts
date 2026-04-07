@@ -49,6 +49,29 @@ export function getCurrentStepIndex(
   return boundariesMs.length - 1;
 }
 
+/**
+ * Step indexes that became newly active since the last spoken cue.
+ * Used to backfill every missed boundary when elapsed time jumps forward
+ * across multiple workout steps between renders.
+ */
+export function getPendingStepIndexes(
+  lastSpokenStepIndex: number | null,
+  currentStepIndex: number
+): number[] {
+  const firstPendingIndex =
+    lastSpokenStepIndex === null ? 0 : lastSpokenStepIndex + 1;
+
+  if (currentStepIndex < firstPendingIndex) {
+    return [];
+  }
+
+  const pending: number[] = [];
+  for (let i = Math.max(0, firstPendingIndex); i <= currentStepIndex; i++) {
+    pending.push(i);
+  }
+  return pending;
+}
+
 export type StepProgress = {
   stepDurationMs: number;
   stepElapsedMs: number;

@@ -1,13 +1,77 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { pickVoice } from "../lib/speech.ts";
+import {
+  __resetSpeechForTests,
+  cancelSpeech,
+  enqueueSpeech,
+  pickVoice,
+  speak,
+} from "../lib/speech.ts";
 
 // Minimal stand-in for SpeechSynthesisVoice. The DOM type isn't available in
 // the Node test environment, so we cast through unknown. pickVoice only reads
 // `name`, `lang`, and `default`.
 function v(name: string, lang: string, isDefault = false): SpeechSynthesisVoice {
   return { name, lang, default: isDefault } as unknown as SpeechSynthesisVoice;
+}
+
+type MockSpeechEnv = {
+  cancelCalls: number;
+  history: string[];
+  queue: string[];
+};
+
+function installMockSpeech(): MockSpeechEnv {
+  const env: MockSpeechEnv = {
+    cancelCalls: 0,
+    history: [],
+    queue: [],
+  };
+
+  class MockSpeechSynthesisUtterance {
+    text: string;
+    voice: SpeechSynthesisVoice | null = null;
+    lang = "";
+    rate = 1;
+    pitch = 1;
+    volume = 1;
+
+    constructor(text: string) {
+      this.text = text;
+    }
+  }
+
+  const speechSynthesis = {
+    speak(utterance: SpeechSynthesisUtterance) {
+      const text = (utterance as unknown as { text: string }).text;
+      env.history.push(text);
+      env.queue.push(text);
+    },
+    cancel() {
+      env.cancelCalls += 1;
+      env.queue = [];
+    },
+    getVoices() {
+      return [];
+    },
+    addEventListener() {},
+    removeEventListener() {},
+  } as unknown as SpeechSynthesis;
+
+  Object.assign(globalThis, {
+    SpeechSynthesisUtterance:
+      MockSpeechSynthesisUtterance as unknown as typeof SpeechSynthesisUtterance,
+    window: { speechSynthesis } as Window & typeof globalThis,
+  });
+
+  return env;
+}
+
+function uninstallMockSpeech() {
+  __resetSpeechForTests();
+  Reflect.deleteProperty(globalThis, "window");
+  Reflect.deleteProperty(globalThis, "SpeechSynthesisUtterance");
 }
 
 test("pickVoice returns null for an empty voice list", () => {
@@ -70,4 +134,41 @@ test("pickVoice returns the first voice when no language and no female match exi
 test("pickVoice handles mixed-case lang prefixes", () => {
   const voices = [v("Samantha", "EN-US"), v("Hans", "DE-DE")];
   assert.equal(pickVoice(voices, "en")?.name, "Samantha");
+});
+
+test("enqueueSpeech appends utterances without interrupting queued cues", () => {
+  const env = installMockSpeech();
+
+  enqueueSpeech(["Warm-up", "Run", "Walk"]);
+
+  assert.equal(env.cancelCalls, 0);
+  assert.deepEqual(env.queue, ["Warm-up", "Run", "Walk"]);
+  assert.deepEqual(env.history, ["Warm-up", "Run", "Walk"]);
+
+  uninstallMockSpeech();
+});
+
+test("speak cancels queued speech before starting a fresh cue", () => {
+  const env = installMockSpeech();
+
+  enqueueSpeech(["Warm-up", "Run"]);
+  speak("Walk");
+
+  assert.equal(env.cancelCalls, 1);
+  assert.deepEqual(env.queue, ["Walk"]);
+  assert.deepEqual(env.history, ["Warm-up", "Run", "Walk"]);
+
+  uninstallMockSpeech();
+});
+
+test("cancelSpeech clears the native queue", () => {
+  const env = installMockSpeech();
+
+  enqueueSpeech(["Warm-up", "Run"]);
+  cancelSpeech();
+
+  assert.equal(env.cancelCalls, 1);
+  assert.deepEqual(env.queue, []);
+
+  uninstallMockSpeech();
 });

@@ -104,20 +104,7 @@ export function prepareSpeech(): void {
   });
 }
 
-/**
- * Speak `text` immediately, cancelling any in-flight or queued utterances
- * first so stale step transitions never pile up. Synchronous by design so
- * it preserves the user-gesture chain on iOS Safari. No-op if the Web
- * Speech API is unavailable.
- */
-export function speak(text: string): void {
-  if (!isSpeechAvailable()) return;
-  const synth = window.speechSynthesis;
-  try {
-    synth.cancel();
-  } catch {
-    // Some platforms throw if there is nothing to cancel — ignore.
-  }
+function createUtterance(text: string): SpeechSynthesisUtterance {
   const utterance = new SpeechSynthesisUtterance(text);
   if (cachedVoice) {
     utterance.voice = cachedVoice;
@@ -128,11 +115,39 @@ export function speak(text: string): void {
   utterance.rate = 1.0;
   utterance.pitch = 1.0;
   utterance.volume = 1.0;
-  try {
-    synth.speak(utterance);
-  } catch {
-    // Some browsers throw if the audio session is locked — ignore.
+  return utterance;
+}
+
+/**
+ * Append one or more utterances to the native speech queue without
+ * interrupting audio that is already in flight.
+ */
+export function enqueueSpeech(texts: ReadonlyArray<string>): void {
+  if (!isSpeechAvailable()) return;
+  const synth = window.speechSynthesis;
+
+  for (const text of texts) {
+    const trimmed = text.trim();
+    if (!trimmed) continue;
+    try {
+      synth.speak(createUtterance(trimmed));
+    } catch {
+      // Some browsers throw if the audio session is locked — stop trying.
+      break;
+    }
   }
+}
+
+/**
+ * Speak `text` immediately, cancelling any in-flight or queued utterances
+ * first so stale step transitions never pile up. Synchronous by design so
+ * it preserves the user-gesture chain on iOS Safari. No-op if the Web
+ * Speech API is unavailable.
+ */
+export function speak(text: string): void {
+  if (!isSpeechAvailable()) return;
+  cancelSpeech();
+  enqueueSpeech([text]);
 }
 
 /** Cancel any queued or in-flight speech. Safe to call when nothing is queued. */

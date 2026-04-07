@@ -5,6 +5,7 @@ import { stepBoundariesMs, totalDurationMs, workout } from "../lib/workout.ts";
 import {
   getCurrentStepIndex,
   getElapsedMs,
+  getPendingStepIndexes,
   getStepProgress,
   isComplete,
   scaleBoundariesMs,
@@ -99,6 +100,19 @@ test("getCurrentStepIndex never overruns past the terminal step", () => {
     getCurrentStepIndex(totalDurationMs + 60_000, stepBoundariesMs),
     workout.length - 1
   );
+});
+
+test("getPendingStepIndexes returns every crossed step when time jumps forward", () => {
+  assert.deepEqual(getPendingStepIndexes(0, 4), [1, 2, 3, 4]);
+});
+
+test("getPendingStepIndexes returns an empty list when no new step was crossed", () => {
+  assert.deepEqual(getPendingStepIndexes(4, 4), []);
+  assert.deepEqual(getPendingStepIndexes(6, 4), []);
+});
+
+test("getPendingStepIndexes includes the first step when nothing has been spoken yet", () => {
+  assert.deepEqual(getPendingStepIndexes(null, 2), [0, 1, 2]);
 });
 
 test("getStepProgress reports a fresh step at its start boundary", () => {

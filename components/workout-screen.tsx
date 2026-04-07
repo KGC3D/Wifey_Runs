@@ -2,6 +2,10 @@
 
 import { useWorkoutController } from "@/hooks/use-workout-controller";
 import { formatMmSs } from "@/lib/format";
+import {
+  countdownTimerA11y,
+  getCountdownAriaLabel,
+} from "@/lib/workout-a11y";
 
 // Mobile-first single-screen workout UI. Intentionally minimal: no settings,
 // no editing, no profile, no analytics. The interface should never grow.
@@ -28,6 +32,9 @@ export function WorkoutScreen() {
   // Speed badge: only shown when the dev fast flag is active. Tiny and unobtrusive
   // — present so the QA tester knows the URL flag is in effect.
   const showSpeedBadge = ctrl.speedMultiplier !== 1;
+  const countdownText = formatMmSs(
+    isIdle ? ctrl.totalDurationMs : isComplete ? 0 : ctrl.stepRemainingMs
+  );
 
   return (
     <main
@@ -90,6 +97,7 @@ export function WorkoutScreen() {
       >
         <div
           aria-live="polite"
+          aria-atomic="true"
           style={{
             fontSize: "clamp(2rem, 9vw, 2.75rem)",
             fontWeight: 800,
@@ -102,8 +110,10 @@ export function WorkoutScreen() {
         </div>
 
         <div
-          aria-live="polite"
-          aria-atomic="true"
+          role={countdownTimerA11y.role}
+          aria-live={countdownTimerA11y.ariaLive}
+          aria-atomic={countdownTimerA11y.ariaAtomic}
+          aria-label={getCountdownAriaLabel(ctrl.status, countdownText)}
           style={{
             fontSize: "clamp(4.5rem, 22vw, 7.5rem)",
             fontWeight: 800,
@@ -112,13 +122,7 @@ export function WorkoutScreen() {
             color: "var(--fg)",
           }}
         >
-          {formatMmSs(
-            isIdle
-              ? ctrl.totalDurationMs
-              : isComplete
-                ? 0
-                : ctrl.stepRemainingMs
-          )}
+          {countdownText}
         </div>
 
         {showNext && (

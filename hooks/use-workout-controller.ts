@@ -9,11 +9,17 @@ import {
 import {
   getCurrentStepIndex,
   getElapsedMs,
+  getPendingStepIndexes,
   getStepProgress,
   isComplete,
   scaleBoundariesMs,
 } from "@/lib/timer";
-import { cancelSpeech, prepareSpeech, speak } from "@/lib/speech";
+import {
+  cancelSpeech,
+  enqueueSpeech,
+  prepareSpeech,
+  speak,
+} from "@/lib/speech";
 
 /**
  * Read the dev `?fast=N` URL flag. Safe to call during render — returns 1
@@ -166,10 +172,24 @@ export function useWorkoutController() {
   // inside the user-tap to satisfy iOS Safari's gesture requirement.
   useEffect(() => {
     if (state.status !== "running") return;
-    if (state.lastSpokenStepIndex === currentStepIndex) return;
-    const label = workout[currentStepIndex]?.label;
-    if (label) speak(label);
-    dispatch({ type: "MARK_SPOKEN", index: currentStepIndex });
+    const pendingStepIndexes = getPendingStepIndexes(
+      state.lastSpokenStepIndex,
+      currentStepIndex
+    );
+    if (pendingStepIndexes.length === 0) return;
+
+    const labels = pendingStepIndexes
+      .map((index) => workout[index]?.label ?? "")
+      .filter(Boolean);
+
+    if (labels.length > 0) {
+      enqueueSpeech(labels);
+    }
+
+    dispatch({
+      type: "MARK_SPOKEN",
+      index: pendingStepIndexes[pendingStepIndexes.length - 1],
+    });
   }, [state.status, state.lastSpokenStepIndex, currentStepIndex]);
 
   // Detect completion exactly once per workout and transition to 'complete'.
