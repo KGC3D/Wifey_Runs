@@ -21,7 +21,7 @@ test("step boundaries stay aligned with workout steps", () => {
 });
 
 test("total duration matches the terminal completion boundary", () => {
-  assert.equal(totalDurationMs, 1_560_000);
+  assert.equal(totalDurationMs, 1_440_000);
   assert.equal(stepBoundariesMs.at(-1), totalDurationMs);
   assert.equal(stepBoundariesMs.at(-2), totalDurationMs);
 });

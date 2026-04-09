@@ -8,14 +8,14 @@ export type WorkoutStep = {
 
 export const workout: ReadonlyArray<WorkoutStep> = [
   { label: "Warm-up", duration: 300 },
-  { label: "Run", duration: 180 },
-  { label: "Walk", duration: 60 },
-  { label: "Run", duration: 180 },
-  { label: "Walk", duration: 60 },
-  { label: "Run", duration: 180 },
-  { label: "Walk", duration: 60 },
-  { label: "Run", duration: 180 },
-  { label: "Walk", duration: 60 },
+  { label: "Run", duration: 120 },
+  { label: "Walk", duration: 90 },
+  { label: "Run", duration: 120 },
+  { label: "Walk", duration: 90 },
+  { label: "Run", duration: 120 },
+  { label: "Walk", duration: 90 },
+  { label: "Run", duration: 120 },
+  { label: "Walk", duration: 90 },
   { label: "Cool down", duration: 300 },
   { label: "Workout complete", duration: 0 },
 ];

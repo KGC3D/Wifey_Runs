@@ -116,19 +116,19 @@ test("getPendingStepIndexes includes the first step when nothing has been spoken
 });
 
 test("getStepProgress reports a fresh step at its start boundary", () => {
-  // 300_000 ms in we just transitioned into step 1 (Run, 180s).
+  // 300_000 ms in we just transitioned into step 1 (Run, 120s).
   const progress = getStepProgress(300_000, 1, stepBoundariesMs);
-  assert.equal(progress.stepDurationMs, 180_000);
+  assert.equal(progress.stepDurationMs, 120_000);
   assert.equal(progress.stepElapsedMs, 0);
-  assert.equal(progress.stepRemainingMs, 180_000);
+  assert.equal(progress.stepRemainingMs, 120_000);
 });
 
 test("getStepProgress reports halfway through a step", () => {
-  // 90s into the first Run interval -> halfway.
-  const progress = getStepProgress(390_000, 1, stepBoundariesMs);
-  assert.equal(progress.stepDurationMs, 180_000);
-  assert.equal(progress.stepElapsedMs, 90_000);
-  assert.equal(progress.stepRemainingMs, 90_000);
+  // 60s into the first Run interval -> halfway.
+  const progress = getStepProgress(360_000, 1, stepBoundariesMs);
+  assert.equal(progress.stepDurationMs, 120_000);
+  assert.equal(progress.stepElapsedMs, 60_000);
+  assert.equal(progress.stepRemainingMs, 60_000);
 });
 
 test("getStepProgress clamps when elapsed exceeds the step boundary", () => {
