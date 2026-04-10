@@ -6,7 +6,7 @@ pocket, and listen.
 
 ## What it does
 
-Plays a fixed 24-minute Couch-to-5K-style interval workout and speaks each
+Plays a fixed 27-minute 30-second Couch-to-5K-style interval workout and speaks each
 phase aloud through your phone or AirPods using the browser's
 [Web Speech API](https://developer.mozilla.org/docs/Web/API/SpeechSynthesis).
 
@@ -23,8 +23,10 @@ The workout:
 | 7   | Walk             | 1:30     |
 | 8   | Run              | 2:00     |
 | 9   | Walk             | 1:30     |
-| 10  | Cool down        | 5:00     |
-| 11  | Workout complete | —        |
+| 10  | Run              | 2:00     |
+| 11  | Walk             | 1:30     |
+| 12  | Cool down        | 5:00     |
+| 13  | Workout complete | —        |
 
 ## Local development
 

@@ -16,9 +16,27 @@ export const workout: ReadonlyArray<WorkoutStep> = [
   { label: "Walk", duration: 90 },
   { label: "Run", duration: 120 },
   { label: "Walk", duration: 90 },
+  { label: "Run", duration: 120 },
+  { label: "Walk", duration: 90 },
   { label: "Cool down", duration: 300 },
   { label: "Workout complete", duration: 0 },
 ];
+
+export const totalIntervals = workout.filter((step) => step.label === "Run").length;
+
+/**
+ * Interval number aligned to each workout step.
+ * Warm-up is 0, each Run increments the count, and the following Walk keeps
+ * the same count so a run/walk cycle shares one interval number.
+ */
+export const intervalNumberByStep: ReadonlyArray<number> = workout.reduce<number[]>(
+  (acc, step) => {
+    const prev = acc.length === 0 ? 0 : acc[acc.length - 1];
+    acc.push(step.label === "Run" ? prev + 1 : prev);
+    return acc;
+  },
+  []
+);
 
 /**
  * Cumulative end-of-step boundaries in milliseconds, indexed by step.

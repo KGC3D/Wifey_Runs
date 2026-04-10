@@ -6,7 +6,10 @@ import {
   countdownTimerA11y,
   getCountdownAriaLabel,
 } from "@/lib/workout-a11y";
-import { shouldShowRunHint } from "@/lib/workout-ui";
+import {
+  getIntervalProgress,
+  shouldShowRunHint,
+} from "@/lib/workout-ui";
 
 // Mobile-first single-screen workout UI. Intentionally minimal: no settings,
 // no editing, no profile, no analytics. The interface should never grow.
@@ -41,6 +44,7 @@ export function WorkoutScreen() {
   // "running at a conversational pace" copy from the original reference.
   // Compared by literal label since the workout step labels are stable.
   const showRunHint = shouldShowRunHint(ctrl.status, ctrl.currentStepLabel);
+  const intervalProgress = getIntervalProgress(ctrl.status, ctrl.currentStepIndex);
 
   return (
     <main
@@ -101,6 +105,20 @@ export function WorkoutScreen() {
           textAlign: "center",
         }}
       >
+        {intervalProgress && (
+          <div
+            style={{
+              fontSize: "0.8125rem",
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "var(--muted)",
+            }}
+          >
+            Interval {intervalProgress.current} of {intervalProgress.total}
+          </div>
+        )}
+
         <div
           aria-live="polite"
           aria-atomic="true"
